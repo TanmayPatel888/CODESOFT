@@ -1,0 +1,115 @@
+import tkinter as tk
+from tkinter import messagebox
+import json
+import os
+
+DATA_FILE = "contacts.json"
+
+# Load existing contacts
+def load_contacts():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+# Save contacts to file
+def save_contacts():
+    with open(DATA_FILE, "w") as f:
+        json.dump(contacts, f, indent=4)
+
+# Add or update contact
+def add_or_update_contact():
+    global contacts
+
+    name = name_entry.get().strip()
+    phone = phone_entry.get().strip()
+    address = address_entry.get("1.0", tk.END).strip()
+
+    if not name or not phone or not address:
+        messagebox.showwarning("Input Error", "All fields are required!")
+        return
+
+    contacts[name] = {"Phone": phone, "Address": address}
+    save_contacts()
+    messagebox.showinfo("Success", f"Contact for '{name}' added/updated!")
+    clear_fields()
+    show_contacts()
+
+# Delete contact
+def delete_contact():
+    name = name_entry.get().strip()
+    if name in contacts:
+        del contacts[name]
+        save_contacts()
+        messagebox.showinfo("Deleted", f"Contact for '{name}' deleted.")
+        clear_fields()
+        show_contacts()
+    else:
+        messagebox.showerror("Error", "Contact not found.")
+
+# Show all contacts
+def show_contacts():
+    contact_list.delete("1.0", tk.END)
+    if not contacts:
+        contact_list.insert(tk.END, "No contacts available.")
+    else:
+        for name, info in contacts.items():
+            contact_list.insert(tk.END, f"Name: {name}\nPhone: {info['Phone']}\nAddress: {info['Address']}\n\n")
+
+# Clear input fields
+def clear_fields():
+    name_entry.delete(0, tk.END)
+    phone_entry.delete(0, tk.END)
+    address_entry.delete("1.0", tk.END)
+
+# Load data
+contacts = load_contacts()
+
+# GUI Setup
+root = tk.Tk()
+root.title("Contact Book - by Tanmay")
+root.geometry("500x600")
+root.config(bg="#2fa3ce")
+
+tk.Label(root, text="📒 Contact Book", font=("Arial", 20, "bold"), bg="#38e811").pack(pady=10)
+
+# Input Fields
+frame = tk.Frame(root, bg="#f2f2f2")
+frame.pack(pady=10)
+
+tk.Label(frame, text="Name:", font=("Arial", 12), bg="#ebe3e3").grid(row=0, column=0, sticky="e")
+name_entry = tk.Entry(frame, width=30)
+name_entry.grid(row=0, column=1, padx=10, pady=5)
+
+tk.Label(frame, text="Phone:", font=("Arial", 12), bg="#d1d6c3").grid(row=1, column=0, sticky="e")
+phone_entry = tk.Entry(frame, width=30)
+phone_entry.grid(row=1, column=1, padx=10, pady=5)
+
+tk.Label(frame, text="Address:", font=("Arial", 12), bg="#e9efd6").grid(row=2, column=0, sticky="ne")
+address_entry = tk.Text(frame, width=22, height=3)
+address_entry.grid(row=2, column=1, padx=10, pady=5)
+
+# Buttons
+btn_frame = tk.Frame(root, bg="#b617d5")
+btn_frame.pack(pady=10)
+
+tk.Button(btn_frame, text="Add / Update", command=add_or_update_contact, width=15).grid(row=0, column=0, padx=5, pady=5)
+tk.Button(btn_frame, text="Delete", command=delete_contact, width=15).grid(row=0, column=1, padx=5, pady=5)
+tk.Button(btn_frame, text="Clear Fields", command=clear_fields, width=15).grid(row=1, column=0, padx=5, pady=5)
+tk.Button(btn_frame, text="Show Contacts", command=show_contacts, width=15).grid(row=1, column=1, padx=5, pady=5)
+
+# Contact Display
+tk.Label(root, text="📋 Saved Contacts:", font=("Arial", 14), bg="#c9e320").pack(pady=5)
+contact_list = tk.Text(root, height=15, width=55, bd=2, relief="sunken")
+contact_list.pack(pady=5)
+
+# Initially show contacts
+show_contacts()
+
+# Run GUI loop
+root.mainloop()
+
+
+
+
+
